@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test tests/engine.test.cjs",
     "check": "python tools/check.py",
-    "build": "python tools/build.py",
+    "build": "node tools/prepare-deploy.cjs",
+    "generate": "python tools/build.py",
     "serve": "python -m http.server 8080 --bind 127.0.0.1"
   }
 }

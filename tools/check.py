@@ -2,11 +2,14 @@
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit, unquote
-import re, sys
+import argparse, re, sys
 from curriculum import MODULES
 import curriculum_extra
 from questions import QUESTIONS
-ROOT=Path(__file__).resolve().parent.parent
+args=argparse.ArgumentParser(description=__doc__)
+args.add_argument('--root',type=Path,help='Diretório de saída a verificar (por exemplo, dist)')
+options=args.parse_args()
+ROOT=(options.root or Path(__file__).resolve().parent.parent).resolve()
 class Inspect(HTMLParser):
     def __init__(self): super().__init__(); self.links=[]; self.ids=[]; self.lang=None
     def handle_starttag(self,tag,attrs):
@@ -17,7 +20,7 @@ class Inspect(HTMLParser):
             if k in a:self.links.append(a[k])
 errors=[];pages={}
 for path in ROOT.rglob('*.html'):
-    if 'tmp' in path.parts or 'node_modules' in path.parts:continue
+    if any(part in {'tmp','node_modules','dist'} for part in path.relative_to(ROOT).parts):continue
     parser=Inspect();parser.feed(path.read_text(encoding='utf-8'));pages[path]=parser
     if parser.lang!='pt-BR':errors.append(f'{path.name}: idioma incorreto')
     if len(parser.ids)!=len(set(parser.ids)):errors.append(f'{path.name}: ids duplicados')

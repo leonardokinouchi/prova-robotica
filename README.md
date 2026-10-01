@@ -12,7 +12,30 @@ python -m http.server 8080 --bind 127.0.0.1
 
 Acesse `http://127.0.0.1:8080`. A interface usa fontes opcionais do Google Fonts, com fallback local. Conteúdo e funções de estudo funcionam offline; pesquisa externa precisa de internet.
 
-## Conteúdo
+## Deploy na Vercel
+
+Importe o repositório `leonardokinouchi/prova-robotica` na Vercel e selecione a branch `main`. Use a raiz do repositório como **Root Directory**. O `vercel.json` configura automaticamente:
+
+- Framework Preset: **Other**.
+- Build Command: `node tools/prepare-deploy.cjs`.
+- Output Directory: `dist`.
+- Nenhuma instalação de dependências ou variável de ambiente necessária.
+
+O build copia as páginas prontas, capítulos, assets e PDFs para `dist`, preservando os links `.html` e as referências aos materiais. Não depende de Python no ambiente da Vercel. Arquivos de manutenção e testes ficam fora da saída publicada. Não há fallback de SPA: URLs inexistentes retornam 404.
+
+Para conferir a saída antes de publicar:
+
+```powershell
+npm run build
+python tools/check.py --root dist
+python -m http.server 8080 --bind 127.0.0.1 --directory dist
+```
+
+Ao editar o conteúdo editorial, execute `npm run generate` (Python 3.12+), confira as alterações e faça commit dos HTML e de `assets/data.js` regenerados. Depois de conectar o projeto à Vercel, novos pushes para a branch de produção podem disparar deploys automáticos conforme a configuração do projeto.
+
+Referência: [configuração oficial da Vercel](https://vercel.com/docs/project-configuration/vercel-json).
+
+## Conteúdo do portal
 
 - **Trilha** (`guia.html`): sequência de estudo e sessões sugeridas.
 - **Documentação** (`documentacao.html`): cerca de 10.000 palavras, 30 capítulos, referências e modo de impressão. Use “Imprimir / salvar como PDF” no navegador para uma cópia.

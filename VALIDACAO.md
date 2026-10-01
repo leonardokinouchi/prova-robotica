@@ -2,6 +2,8 @@
 
 Verificado em 1º de outubro de 2026.
 
+Preparação para Vercel: `npm run build` gera `dist` com 40 páginas, assets e quatro PDFs, sem dependências npm ou Python no build de deploy. Links e âncoras da saída foram validados com `tools/check.py --root dist`. A verificação automatizada no Chrome também passou servindo a pasta `dist`, sem erros de JavaScript. Os oito testes de lógica passaram. A publicação na Vercel depende da importação do repositório na conta do usuário.
+
 - Leitura dos quatro PDFs: 229 páginas reconhecidas por OCR, com inspeção visual de panoramas e páginas de fórmulas e atividades. A extração foi usada como apoio; equações e divergências relevantes foram conferidas visualmente.
 - 40 páginas HTML: documentação completa, 30 capítulos e páginas de estudo/prática. Referências locais e âncoras verificadas por `tools/check.py`.
 - 30 capítulos cobertos por 71 questões; explicações, temas e índices de respostas verificados.
