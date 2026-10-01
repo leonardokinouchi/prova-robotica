@@ -1,0 +1,15 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const E=require('../assets/engine.js');
+const context={};vm.runInNewContext(fs.readFileSync('assets/data.js','utf8')+';globalThis.testData=DATA;',context);const data=context.testData;
+const near=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<tol,`${a} difere de ${b}`);
+test('cinemática direta e soluções inversas preservam o alvo',()=>{const f=E.forward(1,1,0,90);near(f.x,1);near(f.y,1);const sols=E.inverse(1,1,1,1);assert.equal(sols.length,2);for(const q of sols){const p=E.forward(1,1,q.q1,q.q2);near(p.x,1);near(p.y,1);}assert.equal(E.inverse(1,1,3,0).length,0);});
+test('singularidade, borda de alcance e comprimentos diferentes',()=>{near(E.forward(1,1,0,0).det,0);const qs=E.inverse(1,.5,1.5,0);assert.equal(qs.length,2);near(qs[0].q2,0);assert.equal(E.inverse(1,.5,0,0).length,0);});
+test('redução conserva potência com a eficiência declarada',()=>{const r=E.reduction(1,3000,50,.8);near(r.torque,40);near(r.rpm,60);near(r.torque*r.rpm/(1*3000),.8);});
+test('encoder distingue contagens, incremento e metade',()=>{const r=E.encoder(1000,4,20);assert.equal(r.counts,4000);near(r.step,.0045);near(r.half,.00225);});
+test('unidades de energia, PWM e força por contato',()=>{const b=E.battery(12,10,.8,60);near(b.nominal,120);near(b.energy,96);near(b.hours,1.6);near(E.pwm(12,.25),3);near(E.grip(1,.3,2,2),32.7);});
+test('simulado de 30 cobre cada capítulo sem duplicar questões',()=>{for(let i=0;i<20;i++){const bank=E.selectExam(data.questions,data.modules,30);assert.equal(bank.length,30);assert.equal(new Set(bank.map(q=>q.id)).size,30);assert.equal(new Set(bank.map(q=>q.topic)).size,data.modules.length);}});
+test('simulado curto equilibra áreas e não duplica',()=>{const bank=E.selectExam(data.questions,data.modules,20);assert.equal(bank.length,20);assert.equal(new Set(bank.map(q=>q.id)).size,20);const groups=new Set(bank.map(q=>data.modules.find(m=>m.id===q.topic).group));assert.equal(groups.size,new Set(data.modules.map(m=>m.group)).size);});
+test('correção conta branco, acerto, erro e diagnóstico por tema',()=>{const bank=data.questions.slice(0,3);const answers={[bank[0].id]:bank[0].correct,[bank[1].id]:(bank[1].correct+1)%4};const r=E.grade(bank,answers);assert.equal(r.correct,1);assert.equal(r.answered,2);assert.equal(r.total,3);assert.equal(r.percent,33);assert.equal(Object.values(r.topics).reduce((s,t)=>s+t.total,0),3);assert.equal(E.grade(bank,Object.fromEntries(bank.map(q=>[q.id,q.correct]))).percent,100);});
